@@ -21,31 +21,42 @@ void AMovingPlatform::BeginPlay()
 
 	GlobalStartLocation = GetActorLocation();
 	GlobalTargetLocation = GetTransform().TransformPosition(TargetLocation);
-	MoveDistance = (GlobalStartLocation - GlobalTargetLocation).Size();
+	
 }
 
 void AMovingPlatform::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (HasAuthority())
+	if (ActiveTriggers > 0) 
 	{
-			
-		FVector Direction = (GlobalTargetLocation - GlobalStartLocation).GetSafeNormal();
-
-		FVector Location = GetActorLocation();
-		float Distance = (GlobalTargetLocation - Location).Size();
-		float TravelledDistance = (Location - GlobalStartLocation).Size();
-		if (TravelledDistance >= MoveDistance)
+		if (HasAuthority())
 		{
-			FVector Swap = GlobalStartLocation;
-			GlobalStartLocation = GlobalTargetLocation;
-			GlobalTargetLocation = Swap;
+			FVector Direction = (GlobalTargetLocation - GlobalStartLocation).GetSafeNormal();
+			FVector Location = GetActorLocation();
+			float Distance = (GlobalStartLocation - GlobalTargetLocation).Size();
+			float TravelledDistance = (Location - GlobalStartLocation).Size();
+			if (TravelledDistance >= Distance)
+			{
+				FVector Swap = GlobalStartLocation;
+				GlobalStartLocation = GlobalTargetLocation;
+				GlobalTargetLocation = Swap;
+			}
+			Location += Direction * Speed*DeltaTime;
+			SetActorLocation(Location);
 		}
-		Location += Direction * Speed*DeltaTime;
-		SetActorLocation(Location);
+	}
 
+}
 
-		UE_LOG(LogTemp, Warning, TEXT("Move Distance: %d, Travelled Distance : %d,Current Distance : %d!!"), MoveDistance, TravelledDistance, Distance); 
+void AMovingPlatform::AddActiveTrigger()
+{
+	ActiveTriggers++;
+}
+
+void AMovingPlatform::RemoveActiveTrigger()
+{
+	if (ActiveTriggers > 0)
+	{
+		ActiveTriggers--;
 	}
 }
