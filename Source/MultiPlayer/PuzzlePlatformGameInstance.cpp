@@ -3,17 +3,31 @@
 
 #include "PuzzlePlatformGameInstance.h"
 #include "Engine/Engine.h"
+#include "UObject/ConstructorHelpers.h"
+#include "PlatformTrigger.h"
+#include "Blueprint/UserWidget.h"
 #include "GameFramework/PlayerController.h"
+
 
 UPuzzlePlatformGameInstance::UPuzzlePlatformGameInstance(const FObjectInitializer & ObjectInitializer)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Construct Called"));
+	ConstructorHelpers::FClassFinder<UUserWidget> MainMenuBPClass(TEXT("/Game/MenuSystem/WBP_MainMenu"));
+	if (!ensure(MainMenuBPClass.Class != nullptr)) return;
+	MenuClass = MainMenuBPClass.Class;
 }
 
 
 void UPuzzlePlatformGameInstance::Init()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Init Called"));
+	UE_LOG(LogTemp, Warning, TEXT("Found Class %s"), *MenuClass->GetName());
+}
+
+void UPuzzlePlatformGameInstance::LoadMenu()
+{
+	if (!ensure(MenuClass != nullptr)) return;
+	UUserWidget *Menu= CreateWidget<UUserWidget>(this, MenuClass);
+	if (!ensure(Menu!= nullptr)) return;
+	Menu->AddToViewport();
 }
 
 void UPuzzlePlatformGameInstance::Host()
@@ -24,8 +38,8 @@ void UPuzzlePlatformGameInstance::Host()
 
 	UWorld* World = GetWorld();
 	if (!ensure(World != nullptr)) return;
-	World->ServerTravel("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
-				
+	World->ServerTravel("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");		
+
 }
 
 void UPuzzlePlatformGameInstance::Join(const FString & Address)
