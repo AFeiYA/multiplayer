@@ -36,7 +36,6 @@ void UPuzzlePlatformGameInstance::Host()
 {
 	if (Menu != nullptr) 
 	{
-		UE_LOG(LogTemp, Warning, TEXT("TearDownCalled"));
 		Menu->TearDown();
 	}
 	UEngine* Engine = GetEngine();
@@ -50,6 +49,11 @@ void UPuzzlePlatformGameInstance::Host()
 
 void UPuzzlePlatformGameInstance::Join(const FString & Address)
 {
+
+	if (Menu != nullptr)
+	{
+		Menu->TearDown();
+	}
 	UEngine* Engine = GetEngine();
 	if (!ensure(Engine != nullptr)) return;
 	Engine->AddOnScreenDebugMessage(-1, 5, FColor::Green, FString::Printf(TEXT("Joining %s"), *Address));
