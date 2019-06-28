@@ -7,6 +7,7 @@
 #include "PlatformTrigger.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/PlayerController.h"
+#include "MenuSystem/MainMenu.h"
 
 
 UPuzzlePlatformGameInstance::UPuzzlePlatformGameInstance(const FObjectInitializer & ObjectInitializer)
@@ -25,22 +26,19 @@ void UPuzzlePlatformGameInstance::Init()
 void UPuzzlePlatformGameInstance::LoadMenu()
 {
 	if (!ensure(MenuClass != nullptr)) return;
-	UUserWidget *Menu= CreateWidget<UUserWidget>(this, MenuClass);
+	Menu= CreateWidget<UMainMenu>(this, MenuClass);
 	if (!ensure(Menu!= nullptr)) return;
-	Menu->AddToViewport();
-
-	
-	APlayerController* PlayerController = GetFirstLocalPlayerController();
-	if (!ensure(PlayerController != nullptr)) return;
-	FInputModeUIOnly InputModeData;
-	InputModeData.SetWidgetToFocus(Menu->TakeWidget());
-	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	PlayerController->SetInputMode(InputModeData);
-	PlayerController->bShowMouseCursor = true;
+	Menu->SetUp();
+	Menu->SetMenuInterface(this);
 }
 
 void UPuzzlePlatformGameInstance::Host()
 {
+	if (Menu != nullptr) 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TearDownCalled"));
+		Menu->TearDown();
+	}
 	UEngine* Engine = GetEngine();
 	if (!ensure(Engine != nullptr)) return;
 	Engine->AddOnScreenDebugMessage(-1, 5, FColor::Green, TEXT("Hosting"));
